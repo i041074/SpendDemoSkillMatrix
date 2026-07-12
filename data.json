@@ -1,0 +1,517 @@
+{
+  "members": [
+    {
+      "name": "Abhijit",
+      "region": "APJ Team",
+      "role": ""
+    },
+    {
+      "name": "Divya",
+      "region": "APJ Team",
+      "role": ""
+    },
+    {
+      "name": "Dhannanjay",
+      "region": "APJ Team",
+      "role": ""
+    },
+    {
+      "name": "Puneet",
+      "region": "APJ Team",
+      "role": ""
+    },
+    {
+      "name": "Selva",
+      "region": "APJ Team",
+      "role": ""
+    },
+    {
+      "name": "Natalia",
+      "region": "EMEA Team",
+      "role": ""
+    },
+    {
+      "name": "Jozef",
+      "region": "EMEA Team",
+      "role": ""
+    },
+    {
+      "name": "Juraj",
+      "region": "EMEA Team",
+      "role": ""
+    },
+    {
+      "name": "Jeanette",
+      "region": "AMER Team",
+      "role": ""
+    },
+    {
+      "name": "Jennifer",
+      "region": "AMER Team",
+      "role": ""
+    },
+    {
+      "name": "Mike",
+      "region": "AMER Team",
+      "role": ""
+    },
+    {
+      "name": "Shaun",
+      "region": "AMER Team",
+      "role": ""
+    },
+    {
+      "name": "Tammy",
+      "region": "AMER Team",
+      "role": ""
+    },
+    {
+      "name": "Mari",
+      "region": "AMER Team",
+      "role": ""
+    },
+    {
+      "name": "Joseph",
+      "region": "AMER Team",
+      "role": ""
+    },
+    {
+      "name": "Tatsiana",
+      "region": "Extended Team (Demo)",
+      "role": ""
+    },
+    {
+      "name": "Raman",
+      "region": "Extended Team (Demo)",
+      "role": ""
+    },
+    {
+      "name": "Kalyan",
+      "region": "Extended Team (Demo)",
+      "role": ""
+    },
+    {
+      "name": "Soumya",
+      "region": "Extended Team (Demo)",
+      "role": ""
+    },
+    {
+      "name": "Akanksha",
+      "region": "L2 Support",
+      "role": ""
+    },
+    {
+      "name": "Krishna",
+      "region": "L2 Support",
+      "role": ""
+    },
+    {
+      "name": "Raghu",
+      "region": "L2 Support",
+      "role": ""
+    },
+    {
+      "name": "Divya2",
+      "region": "L2 Support",
+      "role": ""
+    },
+    {
+      "name": "Sriram",
+      "region": "Partner TDD",
+      "role": ""
+    },
+    {
+      "name": "Shashank",
+      "region": "Partner TDD",
+      "role": ""
+    },
+    {
+      "name": "Bhushan",
+      "region": "Partner TDD",
+      "role": ""
+    },
+    {
+      "name": "Akash",
+      "region": "Partner TDD",
+      "role": ""
+    },
+    {
+      "name": "Arish",
+      "region": "Partner TDD",
+      "role": ""
+    }
+  ],
+  "rows": [
+    {
+      "id": "r1",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Buying / Agents"
+    },
+    {
+      "id": "r2",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Invoicing / Agents"
+    },
+    {
+      "id": "r3",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Sourcing / Agents"
+    },
+    {
+      "id": "r4",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Contracts / Agents"
+    },
+    {
+      "id": "r5",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Supplier Evaluation / Agents"
+    },
+    {
+      "id": "r6",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Supplier Management / Agents"
+    },
+    {
+      "id": "r7",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "NextGen Analytics"
+    },
+    {
+      "id": "r8",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Spend Analysis and Insight"
+    },
+    {
+      "id": "r9",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "External Workforce Insight"
+    },
+    {
+      "id": "r10",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Category Management / Agents"
+    },
+    {
+      "id": "r11",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Supplier Risk / Agents"
+    },
+    {
+      "id": "r12",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Intake Management / Agents"
+    },
+    {
+      "id": "r13",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Business Network / Agents"
+    },
+    {
+      "id": "r14",
+      "sec": "Next Gen Ariba Solutions / Assistants/Agents",
+      "name": "Mobile Apps"
+    },
+    {
+      "id": "r15",
+      "sec": "Fieldglass Solutions /Assistants / Agents",
+      "name": "SAP Fieldglass Contingent Workforce Management"
+    },
+    {
+      "id": "r16",
+      "sec": "Fieldglass Solutions /Assistants / Agents",
+      "name": "Services Procurement (Statement of Work)"
+    },
+    {
+      "id": "r17",
+      "sec": "Fieldglass Solutions /Assistants / Agents",
+      "name": "Worker Profile Management"
+    },
+    {
+      "id": "r18",
+      "sec": "Fieldglass Solutions /Assistants / Agents",
+      "name": "SAP Fieldglass Cross Topics"
+    },
+    {
+      "id": "r19",
+      "sec": "Direct Procurement / Assitants/Agents",
+      "name": "4RD - Direct Material Sourcing"
+    },
+    {
+      "id": "r20",
+      "sec": "Direct Procurement / Assitants/Agents",
+      "name": "2XT Scope Item Central Purchasing"
+    },
+    {
+      "id": "r21",
+      "sec": "Direct Procurement / Assitants/Agents",
+      "name": "2ME - Setting Up Central Purchase Contracts"
+    },
+    {
+      "id": "r22",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "E-Tendering Capabilities"
+    },
+    {
+      "id": "r23",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "Public Sector / Ariba"
+    },
+    {
+      "id": "r24",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "Retail /Ariba"
+    },
+    {
+      "id": "r25",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "Ariba PPS"
+    },
+    {
+      "id": "r26",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "Insurance / Ariba"
+    },
+    {
+      "id": "r27",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "Product Life Cycle Costing (PLC) / Ariba"
+    },
+    {
+      "id": "r28",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "Automotive / Ariba"
+    },
+    {
+      "id": "r29",
+      "sec": "Industries/ Assistants/Agents",
+      "name": "Health Care/ Ariba"
+    },
+    {
+      "id": "r30",
+      "sec": "BDC & Spend",
+      "name": "Spend & BDC"
+    },
+    {
+      "id": "r31",
+      "sec": "BDC & Spend",
+      "name": "Standard demo"
+    },
+    {
+      "id": "r32",
+      "sec": "BDC & Spend",
+      "name": "POCs"
+    },
+    {
+      "id": "r33",
+      "sec": "ERP TOPICS",
+      "name": "S/4 Cloud Functional"
+    },
+    {
+      "id": "r34",
+      "sec": "ERP TOPICS",
+      "name": "S/4 Cloud Technical"
+    },
+    {
+      "id": "r35",
+      "sec": "ERP TOPICS",
+      "name": "HE4 (Private Cloud) Functional"
+    },
+    {
+      "id": "r36",
+      "sec": "ERP TOPICS",
+      "name": "HE4 (Private Cloud) Technical"
+    },
+    {
+      "id": "r37",
+      "sec": "TECHNICAL TOPICS",
+      "name": "AI/Agents"
+    },
+    {
+      "id": "r38",
+      "sec": "TECHNICAL TOPICS",
+      "name": "Integration (CIG)"
+    },
+    {
+      "id": "r39",
+      "sec": "TECHNICAL TOPICS",
+      "name": "ABAP"
+    },
+    {
+      "id": "r40",
+      "sec": "TECHNICAL TOPICS",
+      "name": "System Upgrade/Refresh Post Activities"
+    },
+    {
+      "id": "r41",
+      "sec": "TECHNICAL TOPICS",
+      "name": "SSO"
+    },
+    {
+      "id": "r42",
+      "sec": "TECHNICAL TOPICS",
+      "name": "APIs"
+    },
+    {
+      "id": "r43",
+      "sec": "TECHNICAL TOPICS",
+      "name": "QTP (scripting)(Testing)"
+    },
+    {
+      "id": "r44",
+      "sec": "TECHNICAL TOPICS",
+      "name": "BTP"
+    },
+    {
+      "id": "r45",
+      "sec": "TECHNICAL TOPICS",
+      "name": "IAS"
+    },
+    {
+      "id": "r46",
+      "sec": "INFRASTRUCTURE  TOPICS",
+      "name": "Provisioning Requests"
+    },
+    {
+      "id": "r47",
+      "sec": "INFRASTRUCTURE  TOPICS",
+      "name": "General Configuration"
+    },
+    {
+      "id": "r48",
+      "sec": "INFRASTRUCTURE  TOPICS",
+      "name": "General Integration"
+    },
+    {
+      "id": "r49",
+      "sec": "PROCESSES/TOOLS",
+      "name": "Release Readiness"
+    },
+    {
+      "id": "r50",
+      "sec": "PROCESSES/TOOLS",
+      "name": "Password Management"
+    },
+    {
+      "id": "r51",
+      "sec": "PROCESSES/TOOLS",
+      "name": "GDPR / Complaince Check"
+    },
+    {
+      "id": "r52",
+      "sec": "PROCESSES/TOOLS",
+      "name": "Experience Agent"
+    },
+    {
+      "id": "r53",
+      "sec": "PROCESSES/TOOLS",
+      "name": "Data harmonization"
+    },
+    {
+      "id": "r54",
+      "sec": "PROCESSES/TOOLS",
+      "name": "Script Testing/Maintenance"
+    },
+    {
+      "id": "r55",
+      "sec": "PROCESSES/TOOLS",
+      "name": "CDBR Resource Manager"
+    },
+    {
+      "id": "r56",
+      "sec": "PROCESSES/TOOLS",
+      "name": "Automation of Scripts"
+    },
+    {
+      "id": "r57",
+      "sec": "OTHER INTEGRATED OFFERINGS",
+      "name": "SDE 2.0"
+    },
+    {
+      "id": "r58",
+      "sec": "OTHER INTEGRATED OFFERINGS",
+      "name": "Basic Trial (dot.com)"
+    },
+    {
+      "id": "r59",
+      "sec": "OTHER INTEGRATED OFFERINGS",
+      "name": "Product Tour"
+    },
+    {
+      "id": "r60",
+      "sec": "OTHER INTEGRATED OFFERINGS",
+      "name": "Demo Modularization"
+    },
+    {
+      "id": "r61",
+      "sec": "OTHER INTEGRATED OFFERINGS",
+      "name": "MXP"
+    },
+    {
+      "id": "r62",
+      "sec": "OTHER INTEGRATED OFFERINGS",
+      "name": "ADO"
+    },
+    {
+      "id": "r63",
+      "sec": "OTHER INTEGRATED OFFERINGS",
+      "name": "Reporting"
+    },
+    {
+      "id": "r64",
+      "sec": "POC/USER DAYS",
+      "name": "User Days (Ariba only)"
+    },
+    {
+      "id": "r65",
+      "sec": "POC/USER DAYS",
+      "name": "User Days (S4 PC +Ariba)"
+    },
+    {
+      "id": "r66",
+      "sec": "POC/USER DAYS",
+      "name": "Spend Visibility POC's"
+    },
+    {
+      "id": "r67",
+      "sec": "POC/USER DAYS",
+      "name": "NextGen Analytics POCs"
+    },
+    {
+      "id": "r68",
+      "sec": "POC/USER DAYS",
+      "name": "NextGen Trial"
+    },
+    {
+      "id": "r69",
+      "sec": "POC/USER DAYS",
+      "name": "ID&T"
+    },
+    {
+      "id": "r70",
+      "sec": "Partner Solutions",
+      "name": "Icertis"
+    },
+    {
+      "id": "r71",
+      "sec": "Partner Solutions",
+      "name": "Docusign"
+    },
+    {
+      "id": "r72",
+      "sec": "Partner Solutions",
+      "name": "Ecosign"
+    },
+    {
+      "id": "r73",
+      "sec": "Partner Solutions",
+      "name": "Ecovadis"
+    },
+    {
+      "id": "r74",
+      "sec": "Partner Solutions",
+      "name": "Taulia"
+    }
+  ],
+  "skills": {}
+}
