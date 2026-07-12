@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>Spend Management Demo Team — Skill Matrix 2026 v7</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#0070f2;--dark:#1d2d3e;--green:#107e3e;
+  --orange:#e76500;--red:#bb0000;--purple:#6a1b9a;
+  --border:#d9dde7;--bg:#f0f2f5;--muted:#6a6d70;
+  --r:8px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--dark);min-height:100vh}
+
+/* ── SETUP SCREEN ── */
+#setupScreen{ display:none !important; }
+
+/* ── MAIN APP ── */
+#app{display:block}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,#1d2d3e 0%,#0f2744 60%,#0070f2 100%);
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  height:56px;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.h-logo{display:flex;align-items:center;gap:10px}
+.h-badge{background:rgba(255,255,255,.15);color:#fff;font-weight:900;font-size:.78rem;padding:4px 10px;border-radius:5px;letter-spacing:.5px;border:1px solid rgba(255,255,255,.25)}
+.h-title{color:#fff;font-size:.95rem;font-weight:700}
+.h-right{display:flex;align-items:center;gap:10px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#68d391;display:inline-block;margin-right:4px}
+.sync-dot.syncing{background:#ffd700;animation:blink .6s infinite}
+.sync-dot.error{background:var(--red)}
+.sync-label{font-size:.72rem;color:rgba(255,255,255,.6)}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:.76rem;font-weight:700;transition:all .15s;display:inline-flex;align-items:center;gap:5px;letter-spacing:.3px}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#005ecc}
+.btn-ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}.btn-ghost:hover{background:rgba(255,255,255,.2)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#0a5c2e}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#8b0000}
+.btn-outline{background:#fff;color:var(--dark);border:1px solid var(--border)}.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── CONTROLS BAR ── */
+.controls{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.search{padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-size:.8rem;width:200px}
+.filter-sel{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:.8rem;background:#fff}
+.ctrl-divider{width:1px;height:24px;background:var(--border)}
+.view-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:.76rem;cursor:pointer;font-weight:600;color:var(--muted)}
+.view-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.legend{display:flex;align-items:center;gap:12px;font-size:.72rem;color:var(--muted);margin-left:auto}
+.leg-item{display:flex;align-items:center;gap:4px}
+.leg-dot{width:14px;height:14px;border-radius:50%;border:2px solid}
+
+/* ── TABLE ── */
+.table-wrap{overflow:auto;max-height:calc(100vh - 120px);background:#fff;border-top:1px solid var(--border)}
+table{border-collapse:collapse;min-width:100%}
+thead{position:sticky;top:0;z-index:20}
+
+.th-region{
+  background:#1d2d3e;color:#fff;font-size:.65rem;font-weight:700;
+  padding:7px 8px;text-align:center;letter-spacing:.8px;text-transform:uppercase;
+  border-right:1px solid rgba(255,255,255,.1);
+}
+.th-name{
+  background:#0f2744;color:#fff;font-size:.68rem;font-weight:700;
+  padding:8px 6px;text-align:center;min-width:64px;border-right:1px solid rgba(255,255,255,.08);
+}
+.th-sticky{position:sticky;left:0;z-index:10;min-width:240px}
+
+.td-label{
+  position:sticky;left:0;background:#fff;z-index:5;
+  font-size:.79rem;padding:7px 16px 7px 20px;
+  border-right:2px solid #e0e4ef;border-bottom:1px solid #f3f4f6;
+  white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;
+}
+
+.row-section td{
+  background:#e8f0fe;font-size:.67rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.8px;color:#1d2d3e;
+  padding:6px 16px;border-bottom:1px solid #cdd4e8;
+}
+.row-section .td-label{background:#e8f0fe}
+
+.row-item:hover .td-label{background:#f8f9ff}
+.row-item:hover td{background:#fafbff}
+
+/* Skill cell */
+.td-skill{
+  text-align:center;padding:4px 2px;
+  border-right:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;
+  cursor:pointer;
+}
+.td-skill:hover{background:#f0f4ff}
+.dot{
+  width:28px;height:28px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:700;cursor:pointer;user-select:none;
+  border:2px solid;transition:all .12s;
+}
+.dot-on{background:var(--blue);border-color:#005ecc;color:#fff}
+.dot-off{background:#f0f2f5;border-color:#d9dde7;color:transparent}
+.dot-off:hover{background:#dce7fd;border-color:var(--blue)}
+
+/* Row actions */
+.row-act{
+  opacity:0;position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  background:var(--red);color:#fff;border:none;border-radius:4px;
+  padding:2px 6px;font-size:.65rem;cursor:pointer;
+}
+.td-label:hover .row-act{opacity:1}
+.td-label-inner{position:relative;display:flex;align-items:center;gap:6px;max-width:220px}
+
+/* ── MODALS ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:200;align-items:center;justify-content:center;
+}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:28px;width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.3)}
+.modal h3{font-size:1.05rem;font-weight:800;margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.76rem;font-weight:700;margin-bottom:5px}
+.field input,.field select{
+  width:100%;padding:9px 12px;border:1px solid var(--border);
+  border-radius:6px;font-size:.82rem;font-family:inherit;
+}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,112,242,.1)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:20px;right:20px;
+  background:#1d2d3e;color:#fff;padding:11px 18px;
+  border-radius:8px;font-size:.8rem;font-weight:600;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+  transform:translateY(50px);opacity:0;transition:all .3s;z-index:500;
+}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.ok{background:var(--green)}
+#toast.err{background:var(--red)}
+
+/* ── MEMBER CHIP ── */
+.member-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#f0f4ff;border:1px solid #cdd6f0;border-radius:20px;
+  padding:4px 10px;margin:3px;font-size:.75rem;
+}
+.chip-del{background:none;border:none;cursor:pointer;color:var(--red);font-size:.8rem;padding:0 2px}
+
+/* ── AVATAR ── */
+.av{
+  width:30px;height:30px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.62rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+
+/* Coverage count badge */
+.cv-badge{
+  font-size:.62rem;background:#e8f0fe;color:var(--blue);
+  padding:1px 6px;border-radius:8px;font-weight:700;flex-shrink:0;
+}
+
+/* ── MEMBER DELETE BTN in header ── */
+.th-del{
+  background:none;border:none;cursor:pointer;color:rgba(255,100,100,.6);
+  font-size:.65rem;display:block;margin:2px auto 0;
+}
+.th-del:hover{color:#ff6b6b}
+
+/* ── TABS ── */
+.tab-bar{
+  background:#fff;border-bottom:2px solid var(--border);
+  display:flex;padding:0 28px;gap:4px;flex-shrink:0;
+}
+.tab-btn{
+  padding:11px 20px;font-size:.82rem;font-weight:600;color:var(--muted);
+  border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;
+  margin-bottom:-2px;transition:all .15s;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--dark)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* ── PAGES ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── DASHBOARD ── */
+.dash-outer{padding:24px 28px;overflow-y:auto;max-height:calc(100vh - 116px)}
+
+/* KPI Cards */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{
+  background:#fff;border-radius:var(--r);padding:20px 22px;
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+.kpi::after{
+  content:'';position:absolute;top:0;left:0;width:4px;height:100%;
+  background:var(--kpi-color,var(--blue));
+}
+.kpi-val{font-size:2.2rem;font-weight:900;color:var(--kpi-color,var(--blue));line-height:1}
+.kpi-lbl{font-size:.76rem;color:var(--muted);margin-top:5px}
+.kpi-sub{font-size:.7rem;color:var(--green);font-weight:600;margin-top:3px}
+
+/* Chart grid */
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.chart-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
+.chart-grid-1{margin-bottom:20px}
+.chart-card{background:#fff;border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.chart-card-hdr{
+  padding:13px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+.chart-card-hdr h3{font-size:.88rem;font-weight:800;color:var(--dark)}
+.chart-card-hdr .sub{font-size:.72rem;color:var(--muted)}
+.chart-body{padding:18px;position:relative}
+.chart-body canvas{display:block}
+
+/* ── REPORT FILTERS BAR ── */
+.rpt-filters{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.rpt-filter-lbl{font-size:.74rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.rpt-sel{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;background:#fff}
+.rpt-chip{
+  padding:5px 12px;border-radius:20px;border:1px solid var(--border);
+  background:#fff;font-size:.74rem;cursor:pointer;font-weight:600;color:var(--muted);transition:all .15s;
+}
+.rpt-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.rpt-divider{width:1px;height:22px;background:var(--border)}
+
+/* ── LEADERBOARD TABLE ── */
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{font-size:.72rem;font-weight:700;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);text-align:left}
+.lb-table td{font-size:.8rem;padding:8px 12px;border-bottom:1px solid #f3f4f6}
+.lb-table tr:hover td{background:#f8f9ff}
+.rank-num{font-weight:800;color:var(--blue);min-width:24px;display:inline-block}
+.rank-bar-wrap{width:100px;height:7px;background:#eef0f3;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
+.rank-bar{height:100%;border-radius:4px;background:var(--blue)}
+
+/* ── GAP TABLE ── */
+.gap-pill{
+  display:inline-block;padding:3px 10px;border-radius:12px;
+  font-size:.7rem;font-weight:700;margin:2px;
+}
+.gap-red{background:#fff0f0;color:var(--red);border:1px solid #fdd}
+.gap-amber{background:#fff8ee;color:var(--orange);border:1px solid #fde}
+
+/* ── HEATMAP ── */
+.hm-table{border-collapse:collapse;font-size:.7rem;width:100%}
+.hm-table td,.hm-table th{padding:5px 6px;border:1px solid #f0f0f0;text-align:center;min-width:28px}
+.hm-table .hm-label{text-align:left;font-size:.72rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:8px}
+.hm-0{background:#fef2f2}
+.hm-1{background:#dcfce7}
+.hm-2{background:#bbf7d0}
+.hm-3{background:#86efac}
+.hm-hi{background:#16a34a;color:#fff}
+
+/* ── SUMMARY TABLE ── */
+.sum-table{width:100%;border-collapse:collapse}
+.sum-table th{font-size:.7rem;font-weight:700;color:var(--muted);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;background:#f8f9fb;white-space:nowrap}
+.sum-table td{font-size:.76rem;padding:7px 10px;border-bottom:1px solid #f3f4f6}
+.sum-table tr:hover td{background:#f8f9ff}
+.pct-bar{width:60px;height:6px;background:#eee;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.pct-fill{height:100%;border-radius:3px}
+
+@media(max-width:900px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .chart-grid-2,.chart-grid-3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app">
+  <!-- HEADER -->
+  <header>
+    <div class="h-logo">
+      <span class="h-badge">SAP</span>
+      <span class="h-title">Spend Management Demo Team — Skill &amp; Focus Area Matrix 2026</span>
+      <span style="font-size:.65rem;color:rgba(255,255,255,.4);margin-left:6px">v7</span>
+    </div>
+    <div class="h-right">
+      <span><span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">Saved locally</span></span>
+      <button class="btn btn-ghost" onclick="openGhConfig()" title="Configure GitHub sync">&#9881; GitHub</button>
+      <button class="btn btn-ghost" onclick="openModal('mMember')">+ Member</button>
+      <button class="btn btn-ghost" onclick="openModal('mRow')">+ Row</button>
+      <button class="btn btn-ghost" id="btnResetRows" onclick="resetDefaultRows()" title="Restore all default rows from the template" style="display:none;background:rgba(187,0,0,.5)">&#8635; Restore Rows</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">&#8595; CSV</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-matrix" onclick="switchTab('matrix')">Skill Matrix</button>
+    <button class="tab-btn" id="tab-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" id="tab-coverage" onclick="switchTab('coverage')">Coverage Report</button>
+    <button class="tab-btn" id="tab-leaderboard" onclick="switchTab('leaderboard')">Team Leaderboard</button>
+    <button class="tab-btn" id="tab-gaps" onclick="switchTab('gaps')">Gap Analysis</button>
+    <button class="tab-btn" id="tab-heatmap" onclick="switchTab('heatmap')">Heatmap</button>
+  </div>
+
+  <!-- ── MATRIX PAGE ── -->
+  <div class="page active" id="page-matrix">
+    <div class="controls">
+      <input class="search" id="searchBox" placeholder="&#128269; Search skills..." oninput="renderTable()"/>
+      <select class="filter-sel" id="regionFilter">
+        <option value="">All Teams</option>
+      </select>
+      <div class="ctrl-divider"></div>
+      <button class="view-btn active" id="vAll" onclick="setView('all')">All</button>
+      <button class="view-btn" id="vFilled" onclick="setView('filled')">Has Skills Only</button>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--blue);border-color:#005ecc"></div> Has skill</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#f0f2f5;border-color:#d9dde7"></div> No skill</div>
+      </div>
+    </div>
+    <div class="table-wrap" id="tableWrap"></div>
+  </div>
+
+  <!-- ── DASHBOARD PAGE ── -->
+  <div class="page" id="page-dashboard">
+    <div class="rpt-filters">
+      <span class="rpt-filter-lbl">Filter by Team:</span>
+      <select class="rpt-sel" id="dashRegion" onchange="renderDashboard()">
+        <option value="">All Teams</option>
+      </select>
+      <div class="rpt-divider"></div>
+      <span class="rpt-filter-lbl">Section:</span>
+      <select class="rpt-sel" id="dashSection" onchange="renderDashboard()">
+        <option value="">All Sections</option>
+      </select>
+      <div class="rpt-divider"></div>
+      <span class="rpt-filter-lbl">Min Coverage:</span>
+      <select class="rpt-sel" id="dashMinCov" onchange="renderDashboard()">
+        <option value="0">Any</option>
+        <option value="1">1+ members</option>
+        <option value="3">3+ members</option>
+        <option value="5">5+ members</option>
+      </select>
+    </div>
+    <div class="dash-outer" id="dashOuter"></div>
+  </div>
+
+  <!-- ── COVERAGE REPORT PAGE ── -->
+  <div class="page" id="page-coverage">
+    <div class="rpt-filters">
+      <span class="rpt-filter-lbl">Section:</span>
+      <select class="rpt-sel" id="covSection" onchange="renderCoverage()"><option value="">All Sections</option></select>
+      <div class="rpt-divider"></div>
+      <span class="rpt-filter-lbl">Sort by:</span>
+      <select class="rpt-sel" id="covSort" onchange="renderCoverage()">
+        <option value="asc">Coverage Low → High</option>
+        <option value="desc">Coverage High → Low</option>
+        <option value="name">Name A-Z</option>
+      </select>
+      <div class="rpt-divider"></div>
+      <span class="rpt-filter-lbl">Show:</span>
+      <button class="rpt-chip on" id="covShowAll" onclick="setCovFilter('all')">All</button>
+      <button class="rpt-chip" id="covShowGaps" onclick="setCovFilter('gaps')">Gaps Only</button>
+      <button class="rpt-chip" id="covShowCov" onclick="setCovFilter('covered')">Covered Only</button>
+    </div>
+    <div style="padding:20px 28px;overflow-y:auto;max-height:calc(100vh - 140px)" id="covOuter"></div>
+  </div>
+
+  <!-- ── LEADERBOARD PAGE ── -->
+  <div class="page" id="page-leaderboard">
+    <div class="rpt-filters">
+      <span class="rpt-filter-lbl">Team:</span>
+      <select class="rpt-sel" id="lbRegion" onchange="renderLeaderboard()"><option value="">All Teams</option></select>
+      <div class="rpt-divider"></div>
+      <span class="rpt-filter-lbl">Sort by:</span>
+      <select class="rpt-sel" id="lbSort" onchange="renderLeaderboard()">
+        <option value="total">Total Skills</option>
+        <option value="pct">Coverage %</option>
+        <option value="name">Name A-Z</option>
+      </select>
+    </div>
+    <div style="padding:20px 28px;overflow-y:auto;max-height:calc(100vh - 140px)" id="lbOuter"></div>
+  </div>
+
+  <!-- ── GAP ANALYSIS PAGE ── -->
+  <div class="page" id="page-gaps">
+    <div class="rpt-filters">
+      <span class="rpt-filter-lbl">Section:</span>
+      <select class="rpt-sel" id="gapSection" onchange="renderGaps()"><option value="">All Sections</option></select>
+      <div class="rpt-divider"></div>
+      <span class="rpt-filter-lbl">Threshold:</span>
+      <select class="rpt-sel" id="gapThreshold" onchange="renderGaps()">
+        <option value="0">0 members (no coverage)</option>
+        <option value="1">Fewer than 2 members</option>
+        <option value="2">Fewer than 3 members</option>
+      </select>
+    </div>
+    <div style="padding:20px 28px;overflow-y:auto;max-height:calc(100vh - 140px)" id="gapOuter"></div>
+  </div>
+
+  <!-- ── HEATMAP PAGE ── -->
+  <div class="page" id="page-heatmap">
+    <div class="rpt-filters">
+      <span class="rpt-filter-lbl">Section:</span>
+      <select class="rpt-sel" id="hmSection" onchange="renderHeatmap()"><option value="">All Sections</option></select>
+      <div class="rpt-divider"></div>
+      <span class="rpt-filter-lbl">Team:</span>
+      <select class="rpt-sel" id="hmRegion" onchange="renderHeatmap()"><option value="">All Teams</option></select>
+    </div>
+    <div style="padding:20px 28px;overflow-y:auto;max-height:calc(100vh - 140px)" id="hmOuter"></div>
+  </div>
+
+</div>
+
+<!-- ══ MODAL: ADD MEMBER ══ -->
+<div class="modal-bg" id="mMember">
+  <div class="modal">
+    <h3>Add Team Member</h3>
+    <div class="field">
+      <label>Full Name *</label>
+      <input id="mName" placeholder="e.g. Priya Shah"/>
+    </div>
+    <div class="field">
+      <label>Team / Region *</label>
+      <select id="mRegion">
+        <option value="APJ Team">APJ Team</option>
+        <option value="EMEA Team">EMEA Team</option>
+        <option value="AMER Team">AMER Team</option>
+        <option value="Extended Team (Demo)">Extended Team (Demo)</option>
+        <option value="L2 Support">L2 Support</option>
+        <option value="Partner TDD">Partner TDD</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Role / Title</label>
+      <input id="mRole" placeholder="e.g. Demo Architect"/>
+    </div>
+
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="font-size:.76rem;font-weight:700;margin-bottom:8px">Current Team Members</div>
+      <div id="memberChips"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('mMember')">Close</button>
+      <button class="btn btn-blue" onclick="addMember()">Add Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ADD ROW ══ -->
+<div class="modal-bg" id="mRow">
+  <div class="modal">
+    <h3>Add Solution / Project / Category</h3>
+    <div class="field">
+      <label>Name *</label>
+      <input id="rName" placeholder="e.g. Autonomous Sourcing Agent"/>
+    </div>
+    <div class="field">
+      <label>Section / Group *</label>
+      <select id="rSection" onchange="toggleCustom()">
+        <option value="Next Gen Ariba Solutions / Assistants/Agents">Next Gen Ariba Solutions</option>
+        <option value="Fieldglass Solutions /Assistants / Agents">Fieldglass Solutions</option>
+        <option value="Direct Procurement / Assitants/Agents">Direct Procurement</option>
+        <option value="Industries/ Assistants/Agents">Industries</option>
+        <option value="BDC & Spend">BDC &amp; Spend</option>
+        <option value="ERP TOPICS">ERP Topics</option>
+        <option value="TECHNICAL TOPICS">Technical Topics</option>
+        <option value="INFRASTRUCTURE  TOPICS">Infrastructure Topics</option>
+        <option value="PROCESSES/TOOLS">Processes / Tools</option>
+        <option value="OTHER INTEGRATED OFFERINGS">Other Integrated Offerings</option>
+        <option value="POC/USER DAYS">POC / User Days</option>
+        <option value="Partner Solutions">Partner Solutions</option>
+        <option value="__custom__">Custom Section...</option>
+      </select>
+    </div>
+    <div class="field" id="customSec" style="display:none">
+      <label>Custom Section Name</label>
+      <input id="rCustomSec" placeholder="New section name"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('mRow')">Cancel</button>
+      <button class="btn btn-blue" onclick="addRow()">Add Row</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: SHARE ══ -->
+<div class="modal-bg" id="mShare">
+  <div class="modal">
+    <h3>Share this Matrix</h3>
+    <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px">Share the HTML file + this Bin ID with your teammates. They open the HTML, click "Join Existing" and paste the Bin ID.</p>
+    <div class="field">
+      <label>Bin ID</label>
+      <input id="shareBinId" readonly onclick="this.select()" style="background:#f5f6f7;font-family:monospace"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-blue" onclick="copyBinId()">Copy Bin ID</button>
+      <button class="btn btn-outline" onclick="closeModal('mShare')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: GITHUB CONFIG ══ -->
+<div class="modal-bg" id="mGhConfig">
+  <div class="modal" style="width:520px">
+    <h3>&#9881; GitHub Sync Settings</h3>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:18px;line-height:1.5">
+      Skill data is stored as <code style="background:#f0f2f5;padding:1px 5px;border-radius:3px">skills.json</code> in your GitHub repository.
+      Every change is auto-saved back. All team members share the same file — no server needed.
+    </p>
+    <div class="field">
+      <label>GitHub Owner / Org *</label>
+      <input id="ghOwner" placeholder="e.g. your-org or your-username"/>
+    </div>
+    <div class="field">
+      <label>Repository Name *</label>
+      <input id="ghRepo" placeholder="e.g. skill-matrix"/>
+    </div>
+    <div class="field">
+      <label>Branch</label>
+      <input id="ghBranch" placeholder="main" value="main"/>
+    </div>
+    <div class="field">
+      <label>File Path in Repo</label>
+      <input id="ghPath" placeholder="skills.json" value="skills.json"/>
+    </div>
+    <div class="field">
+      <label>Personal Access Token (PAT) *
+        <span style="font-size:.68rem;font-weight:400;color:var(--muted);display:block;margin-top:2px">
+          Stored only in YOUR browser — never pushed to GitHub. Needs <strong>repo</strong> scope.
+          <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--blue)">Create one here ↗</a>
+        </span>
+      </label>
+      <input id="ghToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
+    </div>
+    <div id="ghTestResult" style="font-size:.78rem;margin-bottom:8px;display:none"></div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="testGhConnection()">Test Connection</button>
+        <button class="btn btn-red" onclick="clearGhConfig()" title="Remove saved GitHub config">Clear Config</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="closeModal('mGhConfig')">Cancel</button>
+        <button class="btn btn-blue" onclick="saveGhConfig()">Save &amp; Sync</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════ v8 ════════════════════════════════════
+// ARCHITECTURE:
+//   • state.rows / state.members  — hardcoded constants, NEVER written by sync
+//   • state.skills                — the only thing GitHub stores/reads
+//   • renderTable()               — called ONCE at startup; never by sync code
+//   • After startup, only refreshAllDots() touches the DOM for skill changes
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Default data ──────────────────────────────────────────────────────────
+var DEFAULT_MEMBERS = [
+  {name:'Abhijit',    region:'APJ Team',             role:''},
+  {name:'Divya',      region:'APJ Team',             role:''},
+  {name:'Dhannanjay', region:'APJ Team',             role:''},
+  {name:'Puneet',     region:'APJ Team',             role:''},
+  {name:'Selva',      region:'APJ Team',             role:''},
+  {name:'Natalia',    region:'EMEA Team',            role:''},
+  {name:'Jozef',      region:'EMEA Team',            role:''},
+  {name:'Juraj',      region:'EMEA Team',            role:''},
+  {name:'Jeanette',   region:'AMER Team',            role:''},
+  {name:'Jennifer',   region:'AMER Team',            role:''},
+  {name:'Mike',       region:'AMER Team',            role:''},
+  {name:'Shaun',      region:'AMER Team',            role:''},
+  {name:'Tammy',      region:'AMER Team',            role:''},
+  {name:'Mari',       region:'AMER Team',            role:''},
+  {name:'Joseph',     region:'AMER Team',            role:''},
+  {name:'Tatsiana',   region:'Extended Team (Demo)', role:''},
+  {name:'Raman',      region:'Extended Team (Demo)', role:''},
+  {name:'Kalyan',     region:'Extended Team (Demo)', role:''},
+  {name:'Soumya',     region:'Extended Team (Demo)', role:''},
+  {name:'Akanksha',   region:'L2 Support',           role:''},
+  {name:'Krishna',    region:'L2 Support',           role:''},
+  {name:'Raghu',      region:'L2 Support',           role:''},
+  {name:'Divya2',     region:'L2 Support',           role:''},
+  {name:'Sriram',     region:'Partner TDD',          role:''},
+  {name:'Shashank',   region:'Partner TDD',          role:''},
+  {name:'Bhushan',    region:'Partner TDD',          role:''},
+  {name:'Akash',      region:'Partner TDD',          role:''},
+  {name:'Arish',      region:'Partner TDD',          role:''}
+];
+
+var DEFAULT_SECTIONS = [
+  {sec:'Next Gen Ariba Solutions / Assistants/Agents', rows:[
+    'Buying / Agents','Invoicing / Agents','Sourcing / Agents','Contracts / Agents',
+    'Supplier Evaluation / Agents','Supplier Management / Agents','NextGen Analytics',
+    'Spend Analysis and Insight','External Workforce Insight','Category Management / Agents',
+    'Supplier Risk / Agents','Intake Management / Agents','Business Network / Agents','Mobile Apps'
+  ]},
+  {sec:'Fieldglass Solutions /Assistants / Agents', rows:[
+    'SAP Fieldglass Contingent Workforce Management',
+    'Services Procurement (Statement of Work)',
+    'Worker Profile Management','SAP Fieldglass Cross Topics'
+  ]},
+  {sec:'Direct Procurement / Assitants/Agents', rows:[
+    '4RD - Direct Material Sourcing',
+    '2XT Scope Item Central Purchasing',
+    '2ME - Setting Up Central Purchase Contracts'
+  ]},
+  {sec:'Industries/ Assistants/Agents', rows:[
+    'E-Tendering Capabilities','Public Sector / Ariba','Retail /Ariba','Ariba PPS',
+    'Insurance / Ariba','Product Life Cycle Costing (PLC) / Ariba',
+    'Automotive / Ariba','Health Care/ Ariba'
+  ]},
+  {sec:'BDC & Spend', rows:['Spend & BDC','Standard demo','POCs']},
+  {sec:'ERP TOPICS', rows:[
+    'S/4 Cloud Functional','S/4 Cloud Technical',
+    'HE4 (Private Cloud) Functional','HE4 (Private Cloud) Technical'
+  ]},
+  {sec:'TECHNICAL TOPICS', rows:[
+    'AI/Agents','Integration (CIG)','ABAP',
+    'System Upgrade/Refresh Post Activities','SSO','APIs',
+    'QTP (scripting)(Testing)','BTP','IAS'
+  ]},
+  {sec:'INFRASTRUCTURE  TOPICS', rows:[
+    'Provisioning Requests','General Configuration','General Integration'
+  ]},
+  {sec:'PROCESSES/TOOLS', rows:[
+    'Release Readiness','Password Management','GDPR / Complaince Check',
+    'Experience Agent','Data harmonization','Script Testing/Maintenance',
+    'CDBR Resource Manager','Automation of Scripts'
+  ]},
+  {sec:'OTHER INTEGRATED OFFERINGS', rows:[
+    'SDE 2.0','Basic Trial (dot.com)','Product Tour',
+    'Demo Modularization','MXP','ADO','Reporting'
+  ]},
+  {sec:'POC/USER DAYS', rows:[
+    'User Days (Ariba only)','User Days (S4 PC +Ariba)',
+    "Spend Visibility POCs",'NextGen Analytics POCs','NextGen Trial','ID&T'
+  ]},
+  {sec:'Partner Solutions', rows:['Icertis','Docusign','Ecosign','Ecovadis','Taulia']}
+];
+
+function buildRows(){
+  var rows=[],id=1;
+  DEFAULT_SECTIONS.forEach(function(s){
+    s.rows.forEach(function(n){ rows.push({id:'r'+(id++),sec:s.sec,name:n}); });
+  });
+  return rows;
+}
+
+// ── Immutable state.rows / state.members ──────────────────────────────────
+// Any attempt to set rows/members to [] is silently ignored.
+var _rows    = buildRows();
+var _members = JSON.parse(JSON.stringify(DEFAULT_MEMBERS));
+var state = {
+  get rows()   { return _rows; },
+  set rows(v)  { if(v && v.length > 0) _rows    = v; },
+  get members(){ return _members; },
+  set members(v){ if(v && v.length > 0) _members = v; },
+  skills: {}
+};
+
+// ── Config keys ───────────────────────────────────────────────────────────
+var SK_KEY    = 'smx_skills_v8';    // localStorage: skills only
+var GH_CFG_KEY= 'smx_gh_cfg_v8';   // localStorage: GitHub config
+
+var viewMode  = 'all';
+var ghSha     = null;   // SHA of skills.json currently on GitHub
+var saveTimer = null;
+var syncing   = false;
+
+// ── GitHub helpers ────────────────────────────────────────────────────────
+function ghCfg(){
+  try{ return JSON.parse(localStorage.getItem(GH_CFG_KEY)||'null'); }catch(e){ return null; }
+}
+function ghHdr(c){
+  return {'Authorization':'Bearer '+c.token,'Content-Type':'application/json',
+    'Accept':'application/vnd.github.v3+json','X-GitHub-Api-Version':'2022-11-28'};
+}
+function ghRUrl(c){
+  return 'https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/'
+    +(c.path||'skills.json').replace(/^\//,'')+('?ref='+encodeURIComponent(c.branch||'main'));
+}
+function ghWUrl(c){
+  return 'https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/'
+    +(c.path||'skills.json').replace(/^\//,'');
+}
+
+// Fetch skills from GitHub. Returns {skills:{}, sha:''} or null (file missing).
+async function ghFetch(c){
+  var r=await fetch(ghRUrl(c),{headers:ghHdr(c)});
+  if(r.status===404){
+    var ck=await fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo,{headers:ghHdr(c)});
+    if(!ck.ok) throw new Error('Repo not found: '+c.owner+'/'+c.repo);
+    return null;
+  }
+  if(!r.ok) throw new Error('GitHub '+r.status);
+  var j=await r.json();
+  var p=JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))));
+  return {skills:(p&&p.skills)?p.skills:{}, sha:j.sha};
+}
+
+// Push current skills to GitHub.
+async function ghPush(c){
+  var body={
+    message:'Update skills',
+    content:btoa(unescape(encodeURIComponent(JSON.stringify({skills:state.skills},null,2)))),
+    branch:(c.branch||'main')
+  };
+  if(ghSha) body.sha=ghSha;
+  var r=await fetch(ghWUrl(c),{method:'PUT',headers:ghHdr(c),body:JSON.stringify(body)});
+  if(!r.ok){
+    var t=await r.text(),m=t;try{m=JSON.parse(t).message;}catch(e){}
+    if(r.status===409||r.status===422) throw new Error('CONFLICT');
+    throw new Error('GitHub '+r.status+': '+m);
+  }
+  ghSha=(await r.json()).content.sha;
+}
+
+// ── Local storage ─────────────────────────────────────────────────────────
+function loadSkills(){
+  try{var r=localStorage.getItem(SK_KEY);if(r){var p=JSON.parse(r);return p.skills||p;}}catch(e){}
+  return {};
+}
+function saveSkills(){ try{localStorage.setItem(SK_KEY,JSON.stringify({skills:state.skills}));}catch(e){} }
+
+// ── Save / sync ───────────────────────────────────────────────────────────
+function scheduleSave(){
+  setDot('dirty'); saveSkills();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(doSave,2500);
+}
+
+async function doSave(){
+  saveTimer=null;
+  var c=ghCfg();
+  if(!c||!c.token){ setDot('ok'); return; }
+  if(syncing){ saveTimer=setTimeout(doSave,1500); return; }
+  syncing=true; setDot('saving');
+  try{
+    await ghPush(c); setDot('ok');
+  }catch(e){
+    if(e.message==='CONFLICT'){
+      try{
+        var rem=await ghFetch(c);
+        if(rem){
+          ghSha=rem.sha;
+          // Merge: add any remote ticks we don't have
+          Object.keys(rem.skills).forEach(function(rid){
+            if(!state.skills[rid]) state.skills[rid]={};
+            Object.keys(rem.skills[rid]).forEach(function(m){
+              if(!state.skills[rid][m]) state.skills[rid][m]=1;
+            });
+          });
+          saveSkills();
+          await ghPush(c); setDot('ok');
+        }
+      }catch(e2){ setDot('err'); toast('Sync conflict: '+e2.message,'err'); }
+    }else{ setDot('err'); toast('Sync failed: '+e.message,'err'); }
+  }
+  syncing=false;
+}
+
+function setDot(s){
+  var d=document.getElementById('syncDot'), l=document.getElementById('syncLabel');
+  if(!d) return;
+  var gh=!!(ghCfg()&&ghCfg().token);
+  if(s==='saving'||s==='dirty'){ d.className='sync-dot syncing'; l.textContent=s==='saving'?'Syncing…':'Unsaved…'; }
+  else if(s==='err'){            d.className='sync-dot error';   l.textContent='Sync error'; }
+  else{                          d.className='sync-dot';         l.textContent=gh?'GitHub synced':'Saved locally'; }
+}
+
+// ── GitHub config modal ───────────────────────────────────────────────────
+function openGhConfig(){
+  var c=ghCfg()||{};
+  document.getElementById('ghOwner').value =c.owner ||'';
+  document.getElementById('ghRepo').value  =c.repo  ||'';
+  document.getElementById('ghBranch').value=c.branch||'main';
+  document.getElementById('ghPath').value  =c.path  ||'skills.json';
+  document.getElementById('ghToken').value =c.token ||'';
+  document.getElementById('ghTestResult').style.display='none';
+  openModal('mGhConfig');
+}
+async function saveGhConfig(){
+  var c={
+    owner: document.getElementById('ghOwner').value.trim(),
+    repo:  document.getElementById('ghRepo').value.trim(),
+    branch:document.getElementById('ghBranch').value.trim()||'main',
+    path:  document.getElementById('ghPath').value.trim()||'skills.json',
+    token: document.getElementById('ghToken').value.trim()
+  };
+  if(!c.owner||!c.repo||!c.token){ toast('Owner, Repo and Token required','err'); return; }
+  localStorage.setItem(GH_CFG_KEY,JSON.stringify(c));
+  closeModal('mGhConfig');
+  toast('Connecting to GitHub…','ok');
+  await loadFromGitHub(c);
+}
+async function testGhConnection(){
+  var c={
+    owner: document.getElementById('ghOwner').value.trim(),
+    repo:  document.getElementById('ghRepo').value.trim(),
+    branch:document.getElementById('ghBranch').value.trim()||'main',
+    path:  document.getElementById('ghPath').value.trim()||'skills.json',
+    token: document.getElementById('ghToken').value.trim()
+  };
+  var el=document.getElementById('ghTestResult');
+  el.style.display='block'; el.textContent='Testing…'; el.style.color='#e76500';
+  try{
+    var r=await fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo,{headers:ghHdr(c)});
+    if(!r.ok){ el.style.color='#bb0000'; el.textContent='✗ '+r.status+' — '+c.owner+'/'+c.repo; return; }
+    var d=await r.json();
+    var hasPush=d.permissions&&d.permissions.push;
+    var fr=await fetch(ghRUrl(c),{headers:ghHdr(c)});
+    el.style.color=hasPush?'#107e3e':'#e76500';
+    el.textContent=(hasPush?'✓':'⚠')+' '+d.full_name+' | write:'+(hasPush?'yes':'no')
+      +' | '+(fr.status===200?'skills.json exists':'will be created on first save');
+  }catch(e){ el.style.color='#bb0000'; el.textContent='✗ '+e.message; }
+}
+function clearGhConfig(){
+  if(!confirm('Remove GitHub sync?')) return;
+  localStorage.removeItem(GH_CFG_KEY); ghSha=null;
+  closeModal('mGhConfig'); setDot('ok'); toast('Config removed','ok');
+}
+
+// Load skills from GitHub, update dots in-place (NEVER re-render the table)
+async function loadFromGitHub(c){
+  setDot('saving');
+  try{
+    var rem=await ghFetch(c);
+    if(rem){
+      ghSha=rem.sha;
+      state.skills=rem.skills;
+      saveSkills();
+      refreshAllDots();   // ← in-place dot update only, no DOM structure change
+      setDot('ok'); toast('Skills loaded from GitHub','ok');
+    }else{
+      await ghPush(c);
+      setDot('ok'); toast('skills.json created','ok');
+    }
+  }catch(e){
+    setDot('err');
+    toast('GitHub error: '+e.message,'err');
+    alert('GitHub error:\n'+e.message);
+  }
+}
+
+// Poll every 60s — merge any new ticks from other users, update dots in-place
+setInterval(async function(){
+  var c=ghCfg();
+  if(!c||!c.token||syncing||saveTimer) return;
+  try{
+    var rem=await ghFetch(c);
+    if(!rem||rem.sha===ghSha) return;
+    ghSha=rem.sha;
+    var changed=false;
+    Object.keys(rem.skills).forEach(function(rid){
+      Object.keys(rem.skills[rid]).forEach(function(m){
+        if(!state.skills[rid]) state.skills[rid]={};
+        if(!state.skills[rid][m]){ state.skills[rid][m]=1; changed=true; }
+      });
+    });
+    if(changed){ saveSkills(); refreshAllDots(); toast('Updated from GitHub','ok'); }
+    setDot('ok');
+  }catch(e){}
+},60000);
+
+// ── Event delegation (single listener, data-* attributes only) ────────────
+document.addEventListener('click',function(e){
+  var td=e.target.closest('td[data-row]');
+  if(td){ toggleSkill(td.dataset.row, decodeURIComponent(td.dataset.member)); return; }
+  var dr=e.target.closest('[data-del-row]');
+  if(dr){ delRow(dr.dataset.delRow); return; }
+  var dm=e.target.closest('[data-del-member]');
+  if(dm){ delMember(decodeURIComponent(dm.dataset.delMember)); return; }
+});
+
+// ── Skill helpers ─────────────────────────────────────────────────────────
+function hasSkill(rid,name){ return !!(state.skills[rid]&&state.skills[rid][name]); }
+
+function toggleSkill(rid,name){
+  if(!state.skills[rid]) state.skills[rid]={};
+  var cur=!!state.skills[rid][name];
+  if(cur) delete state.skills[rid][name]; else state.skills[rid][name]=1;
+  // Update only this one dot and badge — no table re-render
+  var safe=name.replace(/[^a-zA-Z0-9]/g,'_');
+  var dot=document.getElementById('dot_'+rid+'_'+safe);
+  if(dot){ dot.className='dot '+(cur?'dot-off':'dot-on'); dot.innerHTML=cur?'':'&#10003;'; }
+  var cnt=cov(rid);
+  var badge=document.getElementById('cv_'+rid);
+  if(badge){ badge.textContent=cnt; badge.style.display=cnt?'':'none'; }
+  scheduleSave();
+}
+
+function cov(rid){ return state.skills[rid]?Object.keys(state.skills[rid]).length:0; }
+
+// Update every dot without touching table structure
+function refreshAllDots(){
+  state.rows.forEach(function(row){
+    var cnt=cov(row.id);
+    var badge=document.getElementById('cv_'+row.id);
+    if(badge){ badge.textContent=cnt; badge.style.display=cnt?'':'none'; }
+    state.members.forEach(function(m){
+      var safe=m.name.replace(/[^a-zA-Z0-9]/g,'_');
+      var dot=document.getElementById('dot_'+row.id+'_'+safe);
+      if(!dot) return;
+      var has=hasSkill(row.id,m.name);
+      dot.className='dot '+(has?'dot-on':'dot-off');
+      dot.innerHTML=has?'&#10003;':'';
+    });
+  });
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────
+function mCol(r){
+  return {'APJ Team':'#0070f2','EMEA Team':'#c05000','AMER Team':'#107e3e',
+    'Extended Team (Demo)':'#6a1b9a','L2 Support':'#7a5700','Partner TDD':'#ad1457'}[r]||'#555';
+}
+function ini(n){ return n.replace(/\d/g,'').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().substring(0,2); }
+
+function buildRegionFilter(){
+  var sel=document.getElementById('regionFilter'),cur=sel.value;
+  // Temporarily remove listener to prevent spurious onchange during rebuild
+  sel.removeEventListener('change',renderTable);
+  sel.innerHTML='<option value="">All Teams</option>';
+  var seen={};
+  state.members.forEach(function(m){
+    if(!seen[m.region]){seen[m.region]=1;var o=document.createElement('option');o.value=m.region;o.textContent=m.region;sel.appendChild(o);}
+  });
+  sel.value=cur;
+  // Re-attach after rebuild
+  sel.addEventListener('change',renderTable);
+}
+
+function setView(v){
+  viewMode=v;
+  document.getElementById('vAll').className   ='view-btn'+(v==='all'?' active':'');
+  document.getElementById('vFilled').className='view-btn'+(v==='filled'?' active':'');
+  renderTable();
+}
+
+// ── renderTable — called ONCE at startup, then only on explicit user actions ─
+function renderTable(){
+  var search=(document.getElementById('searchBox').value||'').toLowerCase();
+  var region=document.getElementById('regionFilter').value;
+
+  var members=state.members.filter(function(m){return !region||m.region===region;});
+  var rOrd=[],rMap={};
+  members.forEach(function(m){if(!rMap[m.region]){rMap[m.region]=[];rOrd.push(m.region);}rMap[m.region].push(m);});
+  var ord=[];rOrd.forEach(function(r){rMap[r].forEach(function(m){ord.push(m);});});
+
+  var sOrd=[],sMap={};
+  state.rows.forEach(function(r){if(!sMap[r.sec]){sMap[r.sec]=[];sOrd.push(r.sec);}sMap[r.sec].push(r);});
+
+  var h='<table><thead><tr>';
+  h+='<th class="th-sticky" rowspan="2" style="background:#1d2d3e;border-right:3px solid #0070f2;padding:0 14px;vertical-align:middle"><span style="color:#fff;font-size:.72rem;font-weight:700">Solutions / Projects / Categories</span></th>';
+  rOrd.forEach(function(reg){h+='<th colspan="'+rMap[reg].length+'" class="th-region" style="background:'+mCol(reg)+'">'+reg+'</th>';});
+  h+='</tr><tr>';
+  ord.forEach(function(m){
+    h+='<th class="th-name">'+
+       '<div class="av" style="background:'+mCol(m.region)+';margin:0 auto 3px">'+ini(m.name)+'</div>'+
+       '<div style="font-size:.6rem;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 auto">'+m.name+'</div>'+
+       '<button class="th-del" data-del-member="'+encodeURIComponent(m.name)+'" title="Remove">&#10005;</button>'+
+       '</th>';
+  });
+  h+='</tr></thead><tbody>';
+
+  sOrd.forEach(function(sec){
+    var rows=(sMap[sec]||[]).filter(function(r){
+      return !search||r.name.toLowerCase().indexOf(search)>=0||sec.toLowerCase().indexOf(search)>=0;
+    });
+    if(!rows.length) return;
+    if(viewMode==='filled'){rows=rows.filter(function(r){return cov(r.id)>0;});if(!rows.length)return;}
+
+    h+='<tr class="row-section"><td class="td-label" style="background:#e8f0fe;border-right:3px solid #0070f2">'+sec+'</td>';
+    ord.forEach(function(){h+='<td style="background:#e8f0fe;border-bottom:1px solid #cdd4e8"></td>';});
+    h+='</tr>';
+
+    rows.forEach(function(row){
+      var cnt=cov(row.id);
+      h+='<tr class="row-item">'+
+         '<td class="td-label"><div class="td-label-inner">'+
+         '<span style="overflow:hidden;text-overflow:ellipsis">'+row.name+'</span>'+
+         '<span class="cv-badge" id="cv_'+row.id+'"'+(cnt?'':' style="display:none"')+'>'+cnt+'</span>'+
+         '<button data-del-row="'+row.id+'" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.65rem;margin-left:auto;flex-shrink:0">&#10005;</button>'+
+         '</div></td>';
+      ord.forEach(function(m){
+        var has=hasSkill(row.id,m.name);
+        var safe=m.name.replace(/[^a-zA-Z0-9]/g,'_');
+        h+='<td class="td-skill" data-row="'+row.id+'" data-member="'+encodeURIComponent(m.name)+'">'+
+           '<div class="dot '+(has?'dot-on':'dot-off')+'" id="dot_'+row.id+'_'+safe+'">'+(has?'&#10003;':'')+'</div></td>';
+      });
+      h+='</tr>';
+    });
+  });
+  h+='</tbody></table>';
+  document.getElementById('tableWrap').innerHTML=h;
+}
+
+// ── Add / delete ──────────────────────────────────────────────────────────
+function addMember(){
+  var name=document.getElementById('mName').value.trim();
+  var region=document.getElementById('mRegion').value;
+  var role=document.getElementById('mRole').value.trim();
+  if(!name){ toast('Enter a name','err'); return; }
+  if(state.members.find(function(m){return m.name.toLowerCase()===name.toLowerCase();})){toast('Already exists','err');return;}
+  var last=-1; state.members.forEach(function(m,i){if(m.region===region)last=i;});
+  if(last>=0) state.members.splice(last+1,0,{name:name,region:region,role:role});
+  else        state.members.push({name:name,region:region,role:role});
+  document.getElementById('mName').value=''; document.getElementById('mRole').value='';
+  buildRegionFilter(); renderMemberChips(); renderTable();
+  toast(name+' added','ok');
+}
+function delMember(name){
+  if(!confirm('Remove '+name+'?')) return;
+  state.members=state.members.filter(function(m){return m.name!==name;});
+  Object.keys(state.skills).forEach(function(rid){if(state.skills[rid])delete state.skills[rid][name];});
+  scheduleSave(); buildRegionFilter(); renderMemberChips(); renderTable(); toast(name+' removed','ok');
+}
+// Keep backward-compat name used in member chip onclick
+function deleteMember(name){ delMember(name); }
+
+function addRow(){
+  var name=document.getElementById('rName').value.trim();
+  var sec=document.getElementById('rSection').value==='__custom__'
+    ?document.getElementById('rCustomSec').value.trim()
+    :document.getElementById('rSection').value;
+  if(!name||!sec){ toast('Fill all fields','err'); return; }
+  state.rows.push({id:'u'+Date.now(),sec:sec,name:name});
+  closeModal('mRow'); document.getElementById('rName').value='';
+  renderTable(); toast('"'+name+'" added','ok');
+}
+function delRow(rid){
+  var row=state.rows.find(function(r){return r.id===rid;});
+  if(!row||!confirm('Delete "'+row.name+'"?')) return;
+  state.rows=state.rows.filter(function(r){return r.id!==rid;});
+  delete state.skills[rid];
+  scheduleSave(); renderTable();
+}
+function deleteRow(rid){ delRow(rid); }
+
+function resetDefaultRows(){
+  if(!confirm('Restore all default rows?')) return;
+  var ex=state.rows.map(function(r){return r.name;}),added=0;
+  buildRows().forEach(function(dr){if(ex.indexOf(dr.name)<0){state.rows.push(dr);added++;}});
+  renderTable(); buildReportFilters();
+  toast(added>0?added+' rows restored':'Already up to date','ok');
+}
+function renderMemberChips(){
+  var w=document.getElementById('memberChips'); if(!w) return;
+  w.innerHTML=state.members.map(function(m){
+    return '<span class="member-chip">'+
+      '<span class="av" style="background:'+mCol(m.region)+';width:18px;height:18px;font-size:.5rem">'+ini(m.name)+'</span>'+
+      m.name+
+      '<button class="chip-del" onclick="delMember(\''+m.name.replace(/'/g,'&apos;')+'\')">&#10005;</button>'+
+      '</span>';
+  }).join('');
+}
+
+// ── Modals ────────────────────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open'); if(id==='mMember') renderMemberChips(); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function toggleCustom(){
+  document.getElementById('customSec').style.display=
+    document.getElementById('rSection').value==='__custom__'?'':'none';
+}
+document.querySelectorAll('.modal-bg').forEach(function(el){
+  el.addEventListener('click',function(e){if(e.target===el)el.classList.remove('open');});
+});
+function showBinId(){ toast('Data saved locally','ok'); }
+function copyBinId(){ toast('Data stored locally','ok'); }
+
+// ── Export CSV ────────────────────────────────────────────────────────────
+function exportCSV(){
+  var hdr=['Section','Skill'].concat(state.members.map(function(m){return m.name;}));
+  var lines=[hdr.join(',')];
+  state.rows.forEach(function(row){
+    lines.push(['"'+row.sec+'"','"'+row.name+'"'].concat(
+      state.members.map(function(m){return hasSkill(row.id,m.name)?'X':'';})
+    ).join(','));
+  });
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv'}));
+  a.download='Skill_Matrix_2026.csv'; a.click();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+var _tt;
+function toast(msg,type){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.className='show'+(type?' '+type:'');
+  clearTimeout(_tt); _tt=setTimeout(function(){el.className='';},2800);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+var currentTab='matrix', charts={};
+function switchTab(name){
+  currentTab=name;
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('page-'+name).classList.add('active');
+  if(name==='dashboard')   renderDashboard();
+  if(name==='coverage')    renderCoverage();
+  if(name==='leaderboard') renderLeaderboard();
+  if(name==='gaps')        renderGaps();
+  if(name==='heatmap')     renderHeatmap();
+}
+
+// ── Report helpers ────────────────────────────────────────────────────────
+function buildReportFilters(){
+  var secs=secOrder(),regs=regList();
+  ['dashRegion','lbRegion','hmRegion'].forEach(function(id){
+    var s=document.getElementById(id);if(!s)return;
+    s.innerHTML='<option value="">All Teams</option>';
+    regs.forEach(function(r){s.innerHTML+='<option value="'+r+'">'+r+'</option>';});
+  });
+  ['dashSection','covSection','gapSection','hmSection'].forEach(function(id){
+    var s=document.getElementById(id);if(!s)return;
+    s.innerHTML='<option value="">All Sections</option>';
+    secs.forEach(function(sec){s.innerHTML+='<option value="'+sec+'">'+sec+'</option>';});
+  });
+}
+function regList(){var s={},o=[];state.members.forEach(function(m){if(!s[m.region]){s[m.region]=1;o.push(m.region);}});return o;}
+function secOrder(){var s={},o=[];state.rows.forEach(function(r){if(!s[r.sec]){s[r.sec]=1;o.push(r.sec);}});return o;}
+function fMembers(reg){return reg?state.members.filter(function(m){return m.region===reg;}):state.members;}
+function fRows(sec,mc){var r=sec?state.rows.filter(function(x){return x.sec===sec;}):state.rows;return mc?r.filter(function(x){return cov(x.id)>=mc;}):r;}
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────
+function renderDashboard(){
+  buildReportFilters();
+  var reg=document.getElementById('dashRegion').value;
+  var sec=document.getElementById('dashSection').value;
+  var mc=parseInt(document.getElementById('dashMinCov').value)||0;
+  var members=fMembers(reg),rows=fRows(sec,mc);
+  var total=rows.length,covered=rows.filter(function(r){return cov(r.id)>0;}).length;
+  var tsk=rows.reduce(function(a,r){return a+cov(r.id);},0);
+  var pct=total?Math.round(covered/total*100):0;
+  document.getElementById('dashOuter').innerHTML=
+    '<div class="kpi-row">'+
+    '<div class="kpi" style="--kpi-color:#0070f2"><div class="kpi-val">'+members.length+'</div><div class="kpi-lbl">Members</div><div class="kpi-sub">'+regList().length+' regions</div></div>'+
+    '<div class="kpi" style="--kpi-color:#107e3e"><div class="kpi-val">'+total+'</div><div class="kpi-lbl">Focus Areas</div><div class="kpi-sub">'+secOrder().length+' sections</div></div>'+
+    '<div class="kpi" style="--kpi-color:#e76500"><div class="kpi-val">'+tsk+'</div><div class="kpi-lbl">Assignments</div><div class="kpi-sub">'+(members.length?Math.round(tsk/members.length*10)/10:0)+' avg/member</div></div>'+
+    '<div class="kpi" style="--kpi-color:'+(pct<50?'#bb0000':pct<80?'#e76500':'#107e3e')+'"><div class="kpi-val">'+pct+'%</div><div class="kpi-lbl">Coverage</div><div class="kpi-sub">'+covered+'/'+total+' covered</div></div>'+
+    '</div>'+
+    '<div class="chart-grid-2">'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Skills per Member</h3></div><div class="chart-body" style="height:280px"><canvas id="cMem"></canvas></div></div>'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Coverage by Region</h3></div><div class="chart-body" style="height:280px"><canvas id="cReg"></canvas></div></div>'+
+    '</div><div class="chart-grid-2">'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Top 10 Skills</h3></div><div class="chart-body" style="height:320px"><canvas id="cTop"></canvas></div></div>'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Coverage by Section</h3></div><div class="chart-body" style="height:320px"><canvas id="cSec"></canvas></div></div>'+
+    '</div><div class="chart-grid-3">'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Distribution</h3></div><div class="chart-body" style="height:240px"><canvas id="cHist"></canvas></div></div>'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Team Composition</h3></div><div class="chart-body" style="height:240px"><canvas id="cPie"></canvas></div></div>'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Coverage Tiers</h3></div><div class="chart-body" style="height:240px"><canvas id="cTier"></canvas></div></div></div>';
+  ['cMem','cReg','cTop','cSec','cHist','cPie','cTier'].forEach(dc);
+  var mn=members.map(function(m){return m.name;}),mc2=members.map(function(m){return rows.filter(function(r){return hasSkill(r.id,m.name);}).length;}),mc3=members.map(function(m){return mCol(m.region);});
+  charts['cMem']=new Chart(document.getElementById('cMem'),{type:'bar',data:{labels:mn,datasets:[{label:'Skills',data:mc2,backgroundColor:mc3,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:10}}}}}});
+  var rn=regList(),ra=rn.map(function(r){var ms=state.members.filter(function(m){return m.region===r;});return ms.length?Math.round(ms.reduce(function(a,m){return a+rows.filter(function(x){return hasSkill(x.id,m.name);}).length;},0)/ms.length*10)/10:0;}),rc=rn.map(mCol);
+  charts['cReg']=new Chart(document.getElementById('cReg'),{type:'doughnut',data:{labels:rn,datasets:[{data:ra,backgroundColor:rc,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:14}}}}});
+  var top=rows.map(function(r){return{name:r.name,cnt:cov(r.id)};}).sort(function(a,b){return b.cnt-a.cnt;}).slice(0,10);
+  charts['cTop']=new Chart(document.getElementById('cTop'),{type:'bar',data:{labels:top.map(function(x){return x.name;}),datasets:[{data:top.map(function(x){return x.cnt;}),backgroundColor:'rgba(0,112,242,.75)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{ticks:{font:{size:10}}}}}});
+  var so=secOrder().filter(function(s){return !sec||s===sec;}),sp=so.map(function(s){var sr=state.rows.filter(function(r){return r.sec===s;});return sr.length?Math.round(sr.filter(function(r){return cov(r.id)>0;}).length/sr.length*100):0;}),scol=sp.map(function(p){return p===100?'#16a34a':p>=60?'#0070f2':p>=30?'#e76500':'#bb0000';});
+  charts['cSec']=new Chart(document.getElementById('cSec'),{type:'bar',data:{labels:so.map(function(s){return s.replace(/ \/ Assistants\/Agents/,'').substring(0,28);}),datasets:[{data:sp,backgroundColor:scol,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:100,ticks:{callback:function(v){return v+'%';}}},y:{ticks:{font:{size:10}}}}}});
+  var hist=[0,0,0,0,0];rows.forEach(function(r){var c=cov(r.id);if(c===0)hist[0]++;else if(c<=2)hist[1]++;else if(c<=5)hist[2]++;else if(c<=10)hist[3]++;else hist[4]++;});
+  charts['cHist']=new Chart(document.getElementById('cHist'),{type:'bar',data:{labels:['0','1-2','3-5','6-10','11+'],datasets:[{data:hist,backgroundColor:['#bb0000','#e76500','#0070f2','#107e3e','#6a1b9a'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  var rcnt=rn.map(function(r){return state.members.filter(function(m){return m.region===r;}).length;});
+  charts['cPie']=new Chart(document.getElementById('cPie'),{type:'pie',data:{labels:rn,datasets:[{data:rcnt,backgroundColor:rc,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}}}}});
+  var tiers=[0,0,0,0];rows.forEach(function(r){var c=cov(r.id);if(c===0)tiers[0]++;else if(c<=2)tiers[1]++;else if(c<=5)tiers[2]++;else tiers[3]++;});
+  charts['cTier']=new Chart(document.getElementById('cTier'),{type:'doughnut',data:{labels:['None','1-2','3-5','6+'],datasets:[{data:tiers,backgroundColor:['#bb0000','#e76500','#0070f2','#107e3e'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}}}}});
+}
+
+// ── Coverage ──────────────────────────────────────────────────────────────
+var covF='all';
+function setCovFilter(f){
+  covF=f;
+  ['All','Gaps','Cov'].forEach(function(x){document.getElementById('covShow'+x).className='rpt-chip';});
+  document.getElementById(f==='all'?'covShowAll':f==='gaps'?'covShowGaps':'covShowCov').className='rpt-chip on';
+  renderCoverage();
+}
+function renderCoverage(){
+  buildReportFilters();
+  var sec=document.getElementById('covSection').value,sort=document.getElementById('covSort').value;
+  var rows=fRows(sec,0);
+  if(covF==='gaps')    rows=rows.filter(function(r){return cov(r.id)===0;});
+  if(covF==='covered') rows=rows.filter(function(r){return cov(r.id)>0;});
+  if(sort==='asc')  rows.sort(function(a,b){return cov(a.id)-cov(b.id);});
+  if(sort==='desc') rows.sort(function(a,b){return cov(b.id)-cov(a.id);});
+  if(sort==='name') rows.sort(function(a,b){return a.name.localeCompare(b.name);});
+  var mx=rows.reduce(function(m,r){return Math.max(m,cov(r.id));},1)||1;
+  var h='<div class="chart-card"><div class="chart-card-hdr"><h3>Coverage per Focus Area</h3><span class="sub">'+rows.length+' rows</span></div><div style="padding:16px"><table class="sum-table"><thead><tr><th>#</th><th>Section</th><th>Skill</th><th>Coverage</th><th>Members</th></tr></thead><tbody>';
+  rows.forEach(function(r,i){
+    var c=cov(r.id),pct=Math.round(c/state.members.length*100),col=c===0?'#bb0000':c<3?'#e76500':'#107e3e';
+    var who=state.members.filter(function(m){return hasSkill(r.id,m.name);}).map(function(m){
+      return '<span style="font-size:.68rem;background:'+mCol(m.region)+'22;border:1px solid '+mCol(m.region)+'44;border-radius:10px;padding:1px 7px;margin:1px;display:inline-block">'+m.name+'</span>';
+    }).join('');
+    h+='<tr><td style="color:var(--muted);font-weight:700">'+(i+1)+'</td><td style="color:var(--muted);font-size:.72rem">'+r.sec.substring(0,30)+'</td><td style="font-weight:600">'+r.name+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:8px"><div class="pct-bar"><div class="pct-fill" style="width:'+Math.round(c/mx*100)+'%;background:'+col+'"></div></div><span style="font-size:.72rem;font-weight:700;color:'+col+'">'+c+' ('+pct+'%)</span></div></td>'+
+      '<td>'+(who||'<span style="color:var(--muted);font-size:.72rem">None</span>')+'</td></tr>';
+  });
+  document.getElementById('covOuter').innerHTML=h+'</tbody></table></div></div>';
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────
+function renderLeaderboard(){
+  buildReportFilters();
+  var reg=document.getElementById('lbRegion').value,sort=document.getElementById('lbSort').value;
+  var members=fMembers(reg),tr=state.rows.length;
+  var data=members.map(function(m){
+    var sk=state.rows.filter(function(r){return hasSkill(r.id,m.name);}).length;
+    var bd={};secOrder().forEach(function(s){bd[s]=state.rows.filter(function(r){return r.sec===s&&hasSkill(r.id,m.name);}).length;});
+    return{name:m.name,region:m.region,skills:sk,pct:Math.round(sk/tr*100),bd:bd};
+  });
+  if(sort==='total') data.sort(function(a,b){return b.skills-a.skills;});
+  if(sort==='pct')   data.sort(function(a,b){return b.pct-a.pct;});
+  if(sort==='name')  data.sort(function(a,b){return a.name.localeCompare(b.name);});
+  var mx=data.length?data[0].skills:1;
+  var h='<div class="chart-grid-2"><div class="chart-card"><div class="chart-card-hdr"><h3>Skills per Member</h3></div><div class="chart-body" style="height:'+Math.max(280,data.length*28)+'px"><canvas id="cLbB"></canvas></div></div>'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>By Region</h3></div><div class="chart-body" style="height:280px"><canvas id="cLbR"></canvas></div></div></div>'+
+    '<div class="chart-card" style="margin-bottom:20px"><div class="chart-card-hdr"><h3>Leaderboard</h3><span class="sub">'+data.length+' members</span></div><div style="padding:16px"><table class="lb-table"><thead><tr><th>Rank</th><th>Member</th><th>Region</th><th>Skills</th><th>%</th><th>Top Section</th></tr></thead><tbody>';
+  data.forEach(function(d,i){
+    var ts='',tn=0;secOrder().forEach(function(s){if((d.bd[s]||0)>tn){tn=d.bd[s];ts=s;}});
+    var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    h+='<tr><td><span class="rank-num">'+(medal||i+1)+'</span></td>'+
+      '<td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="background:'+mCol(d.region)+';width:26px;height:26px;font-size:.55rem">'+ini(d.name)+'</div><span style="font-weight:700">'+d.name+'</span></div></td>'+
+      '<td><span style="font-size:.72rem;padding:2px 8px;border-radius:10px;background:'+mCol(d.region)+'22;color:'+mCol(d.region)+';font-weight:600">'+d.region+'</span></td>'+
+      '<td><span style="font-weight:800;color:var(--blue)">'+d.skills+'</span><div class="rank-bar-wrap"><div class="rank-bar" style="width:'+Math.round(d.skills/Math.max(mx,1)*100)+'%"></div></div></td>'+
+      '<td><span style="font-weight:700;color:'+(d.pct>50?'#107e3e':d.pct>20?'#e76500':'#bb0000')+'">'+d.pct+'%</span></td>'+
+      '<td style="font-size:.72rem;color:var(--muted)">'+ts.substring(0,30)+'</td></tr>';
+  });
+  document.getElementById('lbOuter').innerHTML=h+'</tbody></table></div></div>';
+  dc('cLbB');dc('cLbR');
+  charts['cLbB']=new Chart(document.getElementById('cLbB'),{type:'bar',data:{labels:data.map(function(d){return d.name;}),datasets:[{data:data.map(function(d){return d.skills;}),backgroundColor:data.map(function(d){return mCol(d.region);}),borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{ticks:{font:{size:10}}}}}});
+  var rg={};regList().forEach(function(r){rg[r]=0;});data.forEach(function(d){rg[d.region]=(rg[d.region]||0)+d.skills;});var rk=Object.keys(rg);
+  charts['cLbR']=new Chart(document.getElementById('cLbR'),{type:'bar',data:{labels:rk,datasets:[{data:rk.map(function(r){return rg[r];}),backgroundColor:rk.map(mCol),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:10}}}}}});
+}
+
+// ── Gap analysis ──────────────────────────────────────────────────────────
+function renderGaps(){
+  buildReportFilters();
+  var sec=document.getElementById('gapSection').value,thr=parseInt(document.getElementById('gapThreshold').value)||0;
+  var rows=fRows(sec,0).filter(function(r){return cov(r.id)<=thr;}),secs={};
+  rows.forEach(function(r){if(!secs[r.sec])secs[r.sec]=[];secs[r.sec].push(r);});
+  var h='<div class="kpi-row" style="margin-bottom:20px">'+
+    '<div class="kpi" style="--kpi-color:#bb0000"><div class="kpi-val">'+rows.length+'</div><div class="kpi-lbl">Gap Topics</div></div>'+
+    '<div class="kpi" style="--kpi-color:#e76500"><div class="kpi-val">'+Object.keys(secs).length+'</div><div class="kpi-lbl">Sections Affected</div></div>'+
+    '<div class="kpi" style="--kpi-color:#0070f2"><div class="kpi-val">'+state.members.length+'</div><div class="kpi-lbl">Total Members</div></div>'+
+    '<div class="kpi" style="--kpi-color:#107e3e"><div class="kpi-val">'+Math.round((state.rows.length-rows.length)/Math.max(state.rows.length,1)*100)+'%</div><div class="kpi-lbl">Covered</div></div></div>'+
+    '<div class="chart-grid-2" style="margin-bottom:20px">'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Gaps by Section</h3></div><div class="chart-body" style="height:260px"><canvas id="cGS"></canvas></div></div>'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Members Most Able to Fill</h3></div><div class="chart-body" style="height:260px"><canvas id="cGM"></canvas></div></div></div>'+
+    '<div class="chart-card"><div class="chart-card-hdr"><h3>Gap Topics</h3></div><div style="padding:16px">';
+  Object.keys(secs).forEach(function(s){
+    h+='<div style="margin-bottom:12px"><div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--muted);margin-bottom:6px">'+s+'</div><div style="display:flex;flex-wrap:wrap;gap:5px">';
+    secs[s].forEach(function(r){var c=cov(r.id);h+='<span class="gap-pill '+(c===0?'gap-red':'gap-amber')+'">'+r.name+(c>0?' ('+c+')':'')+'</span>';});
+    h+='</div></div>';
+  });
+  document.getElementById('gapOuter').innerHTML=h+'</div></div>';
+  dc('cGS');dc('cGM');
+  var sn=Object.keys(secs);
+  charts['cGS']=new Chart(document.getElementById('cGS'),{type:'bar',data:{labels:sn.map(function(s){return s.substring(0,24);}),datasets:[{data:sn.map(function(s){return secs[s].length;}),backgroundColor:'rgba(187,0,0,.7)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{ticks:{font:{size:10}}}}}});
+  var fs=state.members.map(function(m){var sf={};state.rows.forEach(function(r){if(hasSkill(r.id,m.name))sf[r.sec]=(sf[r.sec]||0)+1;});return{name:m.name,region:m.region,pot:rows.filter(function(r){return(sf[r.sec]||0)>0;}).length};}).sort(function(a,b){return b.pot-a.pot;}).slice(0,10);
+  charts['cGM']=new Chart(document.getElementById('cGM'),{type:'bar',data:{labels:fs.map(function(x){return x.name;}),datasets:[{data:fs.map(function(x){return x.pot;}),backgroundColor:fs.map(function(x){return mCol(x.region);}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:10}}}}}});
+}
+
+// ── Heatmap ───────────────────────────────────────────────────────────────
+function renderHeatmap(){
+  buildReportFilters();
+  var rows=fRows(document.getElementById('hmSection').value,0);
+  var members=fMembers(document.getElementById('hmRegion').value);
+  var mx=members.length||1;
+  var h='<div class="chart-card"><div class="chart-card-hdr"><h3>Heatmap</h3><span class="sub">Green=assigned | Red=gap</span></div><div style="overflow-x:auto;padding:12px"><table class="hm-table"><thead><tr><th class="hm-label">Skill</th><th>Cov</th>';
+  members.forEach(function(m){h+='<th><div class="av" style="background:'+mCol(m.region)+';width:22px;height:22px;font-size:.5rem;margin:0 auto" title="'+m.name+'">'+ini(m.name)+'</div></th>';});
+  h+='</tr></thead><tbody>';
+  var so=[],sg={};
+  rows.forEach(function(r){if(!sg[r.sec]){sg[r.sec]=[];so.push(r.sec);}sg[r.sec].push(r);});
+  so=so.filter(function(v,i){return so.indexOf(v)===i;});
+  so.forEach(function(s){
+    h+='<tr><td class="hm-label" colspan="'+(members.length+2)+'" style="background:#e8f0fe;font-size:.65rem;font-weight:800;text-transform:uppercase;padding:5px 8px">'+s+'</td></tr>';
+    sg[s].forEach(function(r){
+      var c=members.filter(function(m){return hasSkill(r.id,m.name);}).length;
+      var cls=c===0?'hm-0':c===1?'hm-1':c<=2?'hm-2':c<=4?'hm-3':'hm-hi';
+      h+='<tr><td class="hm-label '+cls+'">'+r.name+'</td><td class="'+cls+'" style="font-size:.65rem;font-weight:700">'+c+'/'+mx+'</td>';
+      members.forEach(function(m){var has=hasSkill(r.id,m.name);h+='<td class="'+(has?'hm-hi':'hm-0')+'">'+(has?'<span style="font-size:.75rem">&#10003;</span>':'')+'</td>';});
+      h+='</tr>';
+    });
+  });
+  document.getElementById('hmOuter').innerHTML=h+'</tbody></table></div></div>';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+(function(){
+  // Load skills from localStorage (rows always come from hardcoded constants above)
+  state.skills = loadSkills();
+
+  // Wire region filter change BEFORE first render
+  document.getElementById('regionFilter').addEventListener('change', renderTable);
+
+  // Render the table exactly once, synchronously
+  buildRegionFilter();
+  buildReportFilters();
+  renderTable();
+  setDot('ok');
+
+  // Load skills from GitHub in background — NEVER calls renderTable()
+  var c=ghCfg();
+  if(c&&c.token){
+    setDot('saving');
+    ghFetch(c).then(function(rem){
+      if(rem){
+        ghSha=rem.sha;
+        state.skills=rem.skills;
+        saveSkills();
+        refreshAllDots();
+        setDot('ok');
+      }else{
+        ghPush(c).then(function(){setDot('ok');}).catch(function(){setDot('err');});
+      }
+    }).catch(function(e){
+      setDot('err');
+      toast('GitHub load failed: '+e.message,'err');
+    });
+  }
+}());</script>
+</body>
+</html>
